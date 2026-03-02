@@ -1,0 +1,53 @@
+{
+  "userId": "11111111-1111-4111-8111-111111111111",
+  "username": "LegacyUser",
+  "colors": {
+    "hair": 0,
+    "body": 1,
+    "pants": 2
+  },
+  "level": 2,
+  "exp": 12,
+  "expToNext": 64,
+  "hp": 40,
+  "maxHp": 40,
+  "statPoints": 0,
+  "stats": {
+    "str": 3,
+    "vit": 3,
+    "agi": 3,
+    "dex": 3,
+    "int": 3
+  },
+  "position": {
+    "map": "starter_village",
+    "x": 384,
+    "y": 416
+  },
+  "mastery": {
+    "woodcutter": 1,
+    "blacksmith": 1,
+    "warrior": 1,
+    "alchemist": 1
+  },
+  "inventory": [],
+  "equipment": {
+    "weapon": null,
+    "legs": null
+  },
+  "hotbar": [
+    "",
+    "",
+    "",
+    "",
+    "health_potion"
+  ],
+  "questsActive": [],
+  "social": {
+    "friends": [],
+    "blacklist": [],
+    "groupMembers": [],
+    "reports": []
+  },
+  "lastSave": "2026-03-02T17:00:00.000Z"
+}

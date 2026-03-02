@@ -1,0 +1,178 @@
+:root {
+  color-scheme: dark;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top, #2d5f57 0%, #182124 55%),
+    linear-gradient(180deg, #182124 0%, #0d1114 100%);
+  color: #f6f1d8;
+}
+
+* {
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+#app {
+  position: relative;
+}
+
+.game-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.canvas-wrap {
+  position: relative;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.overlay-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.overlay-panel {
+  pointer-events: auto;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  background: rgba(14, 20, 22, 0.92);
+  border: 2px solid #8acb88;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.overlay-panel.top {
+  top: 12px;
+}
+
+.overlay-panel.center {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.overlay-panel.bottom {
+  bottom: 12px;
+}
+
+.menu-stack,
+.field-stack,
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title {
+  font-size: 28px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #c6ddb8;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.button {
+  pointer-events: auto;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: #8acb88;
+  color: #0d1114;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.button.secondary {
+  background: #45615b;
+  color: #f6f1d8;
+}
+
+.button.small {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #45615b;
+  background: #0d1114;
+  color: #f6f1d8;
+  font-size: 16px;
+}
+
+.textarea {
+  min-height: 72px;
+  resize: none;
+}
+
+.hud-bar {
+  display: grid;
+  gap: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 10px;
+  background: rgba(69, 97, 91, 0.9);
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.item-card {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(34, 45, 49, 0.95);
+}
+
+.hidden {
+  display: none;
+}

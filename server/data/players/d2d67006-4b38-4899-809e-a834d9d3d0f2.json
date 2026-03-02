@@ -1,0 +1,77 @@
+{
+  "userId": "d2d67006-4b38-4899-809e-a834d9d3d0f2",
+  "username": "wodakimus",
+  "colors": {
+    "hair": 1,
+    "body": 1,
+    "pants": 2
+  },
+  "level": 1,
+  "exp": 0,
+  "expToNext": 40,
+  "hp": 64,
+  "maxHp": 64,
+  "statPoints": 0,
+  "stats": {
+    "str": 3,
+    "vit": 3,
+    "agi": 3,
+    "dex": 3,
+    "int": 3
+  },
+  "position": {
+    "map": "starter_village",
+    "x": 384,
+    "y": 436.874
+  },
+  "mastery": {
+    "woodcutter": 1,
+    "blacksmith": 1,
+    "warrior": 1,
+    "alchemist": 1
+  },
+  "inventory": [
+    {
+      "instanceId": "wood-b0e9dce2-9abc-48a3-bd17-0425df5b3cae",
+      "baseId": "wood",
+      "name": "Wood",
+      "tier": 1,
+      "slot": "material",
+      "stats": {},
+      "qty": 2,
+      "stackable": true
+    }
+  ],
+  "equipment": {
+    "weapon": null,
+    "legs": null
+  },
+  "hotbar": [
+    null,
+    null,
+    null,
+    null,
+    "health_potion"
+  ],
+  "questsActive": [
+    {
+      "questId": "26f4ed9f-0249-495f-bdac-7efae28abd68",
+      "title": "Gather 4 wood",
+      "progress": 0,
+      "goal": 4,
+      "kind": "gather",
+      "targetId": "wood",
+      "reward": {
+        "exp": 18
+      },
+      "completed": false
+    }
+  ],
+  "social": {
+    "friends": [],
+    "blacklist": [],
+    "groupMembers": [],
+    "reports": []
+  },
+  "lastSave": "2026-03-02T17:19:45.650Z"
+}

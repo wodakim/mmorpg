@@ -1,0 +1,3 @@
+export const HAIR_COLORS = [0x442100, 0x875b2a, 0xf2d6a2];
+export const BODY_COLORS = [0xf7d7b5, 0xd7a57c, 0x8d5b3f];
+export const PANTS_COLORS = [0x4466aa, 0x3d7d4b, 0x7f3b70];
