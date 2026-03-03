@@ -26,6 +26,17 @@ type TwoFrameConfig = {
   depth?: number;
 };
 
+type LayoutMetrics = {
+  baseX: number;
+  baseY: number;
+  scale: number;
+  width: number;
+  height: number;
+};
+
+const REF_WIDTH = 1024;
+const REF_HEIGHT = 2400;
+
 const SHOW_MOCKUP_OVERLAY = false;
 
 const TITLE_TEXTURES = {
@@ -131,39 +142,44 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     resetOverlay();
 
-    const width = this.scale.width;
-    const height = this.scale.height;
-    const centerX = width / 2;
+    const screenWidth = this.scale.width;
+    const screenHeight = this.scale.height;
+    const layout = this.computeLayout(screenWidth, screenHeight);
 
     this.cameras.main.setBackgroundColor("#0a1833");
 
     this.addTextureOrFallback({
       key: TITLE_TEXTURES.background,
-      x: centerX,
-      y: height / 2,
+      x: screenWidth / 2,
+      y: screenHeight / 2,
       depth: 0,
-      fallbackWidth: width,
-      fallbackHeight: height,
+      fallbackWidth: screenWidth,
+      fallbackHeight: screenHeight,
       fallbackColor: 0x0a1833
     });
 
+    this.add.rectangle(screenWidth / 2, screenHeight / 2, screenWidth, screenHeight, 0x081428, 0.22).setDepth(1);
+
     if (SHOW_MOCKUP_OVERLAY && this.textures.exists(TITLE_TEXTURES.mockup)) {
-      this.add.image(centerX, height / 2, TITLE_TEXTURES.mockup).setAlpha(0.25).setDepth(99);
+      this.placeByRef({ key: TITLE_TEXTURES.mockup, x: REF_WIDTH / 2, y: REF_HEIGHT / 2, depth: 98, alpha: 0.3 }, layout, REF_HEIGHT / this.getTextureHeight(TITLE_TEXTURES.mockup));
     }
 
-    this.renderFrame(width, height);
-    this.renderBranding(width, height);
-    this.renderEntities(width, height);
-    this.renderBottomVfxAndCta(width, height);
+    this.renderFrame(layout);
+    this.renderBranding(layout);
+    this.renderEntities(layout);
+    this.renderBottomVfxAndCta(layout);
 
+    const hintFont = `${Math.max(11, Math.round(28 * layout.scale))}px`;
     const hint = this.add
-      .text(centerX, height * 0.9, "Touchez l'écran pour continuer", {
+      .text(layout.baseX + REF_WIDTH / 2 * layout.scale, layout.baseY + 2130 * layout.scale, "Touchez l'écran pour continuer", {
         fontFamily: "Press Start 2P",
-        fontSize: "11px",
-        color: "#eef3ff"
+        fontSize: hintFont,
+        color: "#eef3ff",
+        stroke: "#0c1425",
+        strokeThickness: Math.max(2, Math.round(layout.scale * 6))
       })
       .setOrigin(0.5)
-      .setDepth(50);
+      .setDepth(60);
 
     let started = false;
     const startGame = () => {
@@ -178,125 +194,141 @@ export class TitleScene extends Phaser.Scene {
     hint.setInteractive({ useHandCursor: false }).on("pointerdown", startGame);
   }
 
-  private renderFrame(width: number, height: number): void {
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const sideInset = 14;
-    const topInset = 14;
-    const bottomInset = 14;
+  private computeLayout(screenWidth: number, screenHeight: number): LayoutMetrics {
+    const scale = Math.max(0.2, Math.min(screenWidth / REF_WIDTH, screenHeight / REF_HEIGHT));
+    const width = Math.floor(REF_WIDTH * scale);
+    const height = Math.floor(REF_HEIGHT * scale);
 
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarHorizontal, x: centerX, y: topInset, originY: 0, depth: 40, fallbackWidth: width - 48, fallbackHeight: 24 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarHorizontal, x: centerX, y: height - bottomInset, originY: 1, depth: 40, fallbackWidth: width - 48, fallbackHeight: 24 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarVertical, x: sideInset, y: centerY, originX: 0, depth: 40, fallbackWidth: 24, fallbackHeight: height - 48 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarVertical, x: width - sideInset, y: centerY, originX: 1, depth: 40, fallbackWidth: 24, fallbackHeight: height - 48 });
-
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerUpLeft, x: sideInset, y: topInset, originX: 0, originY: 0, depth: 42 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerUpRight, x: width - sideInset, y: topInset, originX: 1, originY: 0, depth: 42 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerDownLeft, x: sideInset, y: height - bottomInset, originX: 0, originY: 1, depth: 42 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerDownRight, x: width - sideInset, y: height - bottomInset, originX: 1, originY: 1, depth: 42 });
-
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleUp, x: centerX, y: topInset, originY: 0, depth: 43 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleDown, x: centerX, y: height - bottomInset, originY: 1, depth: 43 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleLeft, x: sideInset, y: centerY, originX: 0, depth: 43 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleRight, x: width - sideInset, y: centerY, originX: 1, depth: 43 });
-
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorUpLeft, x: width * 0.22, y: height * 0.23, depth: 35 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorUpRight, x: width * 0.78, y: height * 0.23, depth: 35 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorDownLeft, x: width * 0.22, y: height * 0.72, depth: 35 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorDownRight, x: width * 0.78, y: height * 0.72, depth: 35 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorJewel, x: centerX, y: topInset + 16, depth: 45 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorJewel, x: centerX, y: height - bottomInset - 16, depth: 45 });
+    return {
+      scale,
+      width,
+      height,
+      baseX: Math.floor((screenWidth - width) / 2),
+      baseY: Math.floor((screenHeight - height) / 2)
+    };
   }
 
-  private renderBranding(width: number, height: number): void {
-    const centerX = width / 2;
-    const logoY = height * 0.2;
+  private renderFrame(layout: LayoutMetrics): void {
+    const topY = 0;
+    const bottomY = REF_HEIGHT;
+    const leftX = 0;
+    const rightX = REF_WIDTH;
+
+    this.placeByRef({ key: TITLE_TEXTURES.frameBarHorizontal, x: REF_WIDTH / 2, y: topY, originY: 0, depth: 40, fallbackWidth: REF_WIDTH - 120, fallbackHeight: 54 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameBarHorizontal, x: REF_WIDTH / 2, y: bottomY, originY: 1, depth: 40, fallbackWidth: REF_WIDTH - 120, fallbackHeight: 54 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameBarVertical, x: leftX, y: REF_HEIGHT / 2, originX: 0, depth: 40, fallbackWidth: 56, fallbackHeight: REF_HEIGHT - 120 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameBarVertical, x: rightX, y: REF_HEIGHT / 2, originX: 1, depth: 40, fallbackWidth: 56, fallbackHeight: REF_HEIGHT - 120 }, layout);
+
+    this.placeByRef({ key: TITLE_TEXTURES.frameCornerUpLeft, x: leftX, y: topY, originX: 0, originY: 0, depth: 45 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameCornerUpRight, x: rightX, y: topY, originX: 1, originY: 0, depth: 45 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameCornerDownLeft, x: leftX, y: bottomY, originX: 0, originY: 1, depth: 45 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameCornerDownRight, x: rightX, y: bottomY, originX: 1, originY: 1, depth: 45 }, layout);
+
+    this.placeByRef({ key: TITLE_TEXTURES.frameMiddleUp, x: REF_WIDTH / 2, y: topY, originY: 0, depth: 46 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameMiddleDown, x: REF_WIDTH / 2, y: bottomY, originY: 1, depth: 46 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameMiddleLeft, x: leftX, y: REF_HEIGHT / 2, originX: 0, depth: 46 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameMiddleRight, x: rightX, y: REF_HEIGHT / 2, originX: 1, depth: 46 }, layout);
+
+    this.placeByRef({ key: TITLE_TEXTURES.frameDecorUpLeft, x: 140, y: 630, depth: 44 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameDecorUpRight, x: 884, y: 630, depth: 44 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameDecorDownLeft, x: 140, y: 1690, depth: 44 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameDecorDownRight, x: 884, y: 1690, depth: 44 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameDecorJewel, x: REF_WIDTH / 2, y: 70, depth: 47 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.frameDecorJewel, x: REF_WIDTH / 2, y: REF_HEIGHT - 70, depth: 47 }, layout);
+  }
+
+  private renderBranding(layout: LayoutMetrics): void {
+    const centerX = REF_WIDTH / 2;
+    const logoY = 430;
 
     this.toggleTwoFrame({
       keyA: TITLE_TEXTURES.brandingLogoBg01,
       keyB: TITLE_TEXTURES.brandingLogoBg02,
-      x: centerX,
-      y: logoY - 4,
-      intervalMs: 560,
-      depth: 10,
-      alpha: 0.85,
-      scale: 0.95
+      x: layout.baseX + centerX * layout.scale,
+      y: layout.baseY + logoY * layout.scale,
+      intervalMs: 580,
+      depth: 12,
+      alpha: 0.95,
+      scale: layout.scale
     });
 
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.brandingLogo, x: centerX, y: logoY, depth: 20, fallbackWidth: 220, fallbackHeight: 64, fallbackColor: 0x223850 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.brandingLogoBg2, x: centerX - 95, y: logoY + 22, depth: 22, alpha: 0.9 });
+    this.placeByRef({ key: TITLE_TEXTURES.brandingLogo, x: centerX, y: logoY, depth: 20, fallbackWidth: 520, fallbackHeight: 210, fallbackColor: 0x223850 }, layout);
+    this.placeByRef({ key: TITLE_TEXTURES.brandingLogoBg2, x: 310, y: 660, depth: 24, alpha: 0.92 }, layout);
+
+    const titleFont = `${Math.max(11, Math.round(42 * layout.scale))}px`;
+    const subFont = `${Math.max(10, Math.round(28 * layout.scale))}px`;
 
     this.add
-      .text(centerX, logoY + 92, "Boucle Infinie", {
+      .text(layout.baseX + centerX * layout.scale, layout.baseY + 860 * layout.scale, "Boucle Infinie", {
         fontFamily: "Press Start 2P",
-        fontSize: "16px",
+        fontSize: titleFont,
         color: "#ffffff",
         stroke: "#0c1425",
-        strokeThickness: 5
+        strokeThickness: Math.max(2, Math.round(layout.scale * 8))
       })
       .setOrigin(0.5)
       .setDepth(25);
 
     this.add
-      .text(centerX, logoY + 132, "MMORPG mobile portrait-first", {
+      .text(layout.baseX + centerX * layout.scale, layout.baseY + 980 * layout.scale, "MMORPG mobile portrait-first", {
         fontFamily: "Press Start 2P",
-        fontSize: "11px",
+        fontSize: subFont,
         color: "#eef3ff",
         stroke: "#0c1425",
-        strokeThickness: 4
+        strokeThickness: Math.max(2, Math.round(layout.scale * 7))
       })
       .setOrigin(0.5)
       .setDepth(25);
   }
 
-  private renderEntities(width: number, height: number): void {
+  private renderEntities(layout: LayoutMetrics): void {
     this.toggleTwoFrame({
       keyA: TITLE_TEXTURES.heroIdle01,
       keyB: TITLE_TEXTURES.heroIdle02,
-      x: width * 0.22,
-      y: height * 0.78,
+      x: layout.baseX + 170 * layout.scale,
+      y: layout.baseY + 1770 * layout.scale,
       intervalMs: 620,
-      depth: 26,
-      scale: 1
+      depth: 28,
+      scale: layout.scale
     });
 
     this.toggleTwoFrame({
       keyA: TITLE_TEXTURES.demonIdle01,
       keyB: TITLE_TEXTURES.demonIdle02,
-      x: width * 0.78,
-      y: height * 0.78,
+      x: layout.baseX + 854 * layout.scale,
+      y: layout.baseY + 1770 * layout.scale,
       intervalMs: 620,
-      depth: 26,
-      scale: 1
+      depth: 28,
+      scale: layout.scale
     });
   }
 
-  private renderBottomVfxAndCta(width: number, height: number): void {
-    const centerX = width / 2;
-    const ctaY = height * 0.82;
+  private renderBottomVfxAndCta(layout: LayoutMetrics): void {
+    const centerX = layout.baseX + REF_WIDTH / 2 * layout.scale;
+    const ctaY = layout.baseY + 1935 * layout.scale;
 
-    this.toggleTwoFrame({ keyA: TITLE_TEXTURES.rayPurple01, keyB: TITLE_TEXTURES.rayPurple02, x: centerX - 40, y: ctaY - 16, intervalMs: 420, depth: 18, alpha: 0.95 });
-    this.toggleTwoFrame({ keyA: TITLE_TEXTURES.rayBlue01, keyB: TITLE_TEXTURES.rayBlue02, x: centerX + 40, y: ctaY - 16, intervalMs: 420, depth: 18, alpha: 0.95 });
+    this.toggleTwoFrame({ keyA: TITLE_TEXTURES.rayPurple01, keyB: TITLE_TEXTURES.rayPurple02, x: centerX - 85 * layout.scale, y: ctaY - 36 * layout.scale, intervalMs: 420, depth: 18, alpha: 0.96, scale: layout.scale });
+    this.toggleTwoFrame({ keyA: TITLE_TEXTURES.rayBlue01, keyB: TITLE_TEXTURES.rayBlue02, x: centerX + 85 * layout.scale, y: ctaY - 36 * layout.scale, intervalMs: 420, depth: 18, alpha: 0.96, scale: layout.scale });
 
-    this.cycleThreeFrame([TITLE_TEXTURES.flame01, TITLE_TEXTURES.flame02, TITLE_TEXTURES.flame03], centerX - 82, ctaY - 78, 260, 17);
-    this.cycleThreeFrame([TITLE_TEXTURES.flame2_01, TITLE_TEXTURES.flame2_02, TITLE_TEXTURES.flame2_03], centerX + 82, ctaY - 78, 260, 17);
+    this.cycleThreeFrame([TITLE_TEXTURES.flame01, TITLE_TEXTURES.flame02, TITLE_TEXTURES.flame03], centerX - 140 * layout.scale, ctaY - 135 * layout.scale, 260, 19, layout.scale);
+    this.cycleThreeFrame([TITLE_TEXTURES.flame2_01, TITLE_TEXTURES.flame2_02, TITLE_TEXTURES.flame2_03], centerX + 140 * layout.scale, ctaY - 135 * layout.scale, 260, 19, layout.scale);
 
-    const cta = this.addTextureOrFallback({
+    const cta = this.placeByRef({
       key: TITLE_TEXTURES.ctaButton,
-      x: centerX,
-      y: ctaY,
+      x: REF_WIDTH / 2,
+      y: 1935,
       depth: 30,
-      fallbackWidth: 280,
-      fallbackHeight: 84,
+      fallbackWidth: 620,
+      fallbackHeight: 180,
       fallbackColor: 0x7a8ea5
-    }).setInteractive({ useHandCursor: false });
+    }, layout).setInteractive({ useHandCursor: false });
 
     this.tweens.add({
       targets: cta,
-      alpha: { from: 1, to: 0.86 },
+      alpha: { from: 1, to: 0.88 },
       yoyo: true,
       repeat: -1,
-      duration: 820
+      duration: 850
     });
 
     cta.on("pointerdown", () => {
@@ -305,16 +337,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private toggleTwoFrame(config: TwoFrameConfig): void {
-    const {
-      keyA,
-      keyB,
-      x,
-      y,
-      intervalMs = 500,
-      scale = 1,
-      alpha = 1,
-      depth = 0
-    } = config;
+    const { keyA, keyB, x, y, intervalMs = 500, scale = 1, alpha = 1, depth = 0 } = config;
 
     const frameA = this.addTextureOrFallback({ key: keyA, x, y, scale, alpha, depth, fallbackWidth: 22, fallbackHeight: 22 });
     const frameB = this.addTextureOrFallback({ key: keyB, x, y, scale, alpha: 0, depth, fallbackWidth: 22, fallbackHeight: 22 });
@@ -330,7 +353,7 @@ export class TitleScene extends Phaser.Scene {
     });
   }
 
-  private cycleThreeFrame(keys: string[], x: number, y: number, intervalMs: number, depth: number): void {
+  private cycleThreeFrame(keys: string[], x: number, y: number, intervalMs: number, depth: number, scale: number): void {
     const sprites = keys.map((key, index) =>
       this.addTextureOrFallback({
         key,
@@ -338,6 +361,7 @@ export class TitleScene extends Phaser.Scene {
         y,
         alpha: index === 0 ? 0.92 : 0,
         depth,
+        scale,
         fallbackWidth: 20,
         fallbackHeight: 28,
         fallbackColor: 0x77d5ff
@@ -355,6 +379,23 @@ export class TitleScene extends Phaser.Scene {
         });
       }
     });
+  }
+
+  private placeByRef(config: Placement, layout: LayoutMetrics, scaleMultiplier = 1): Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle {
+    return this.addTextureOrFallback({
+      ...config,
+      x: layout.baseX + config.x * layout.scale,
+      y: layout.baseY + config.y * layout.scale,
+      scale: (config.scale ?? 1) * layout.scale * scaleMultiplier,
+      fallbackWidth: (config.fallbackWidth ?? 18) * layout.scale,
+      fallbackHeight: (config.fallbackHeight ?? 18) * layout.scale
+    });
+  }
+
+  private getTextureHeight(key: string): number {
+    const texture = this.textures.get(key);
+    const source = texture.getSourceImage() as HTMLImageElement;
+    return source?.height ?? REF_HEIGHT;
   }
 
   private addTextureOrFallback(config: Placement): Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle {
