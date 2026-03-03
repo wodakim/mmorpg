@@ -15,22 +15,36 @@ export class InputTouchManager {
   private readonly joystickStick: Phaser.GameObjects.Arc;
   private vector = new Phaser.Math.Vector2(0, 0);
   private activePointerId: number | null = null;
-  private readonly joystickCenter = new Phaser.Math.Vector2(66, 432);
+  private readonly joystickCenter: Phaser.Math.Vector2;
   private readonly maxRadius = 30;
+  private readonly leftZoneMaxX: number;
+  private readonly leftZoneMinY: number;
 
   constructor(private readonly scene: Phaser.Scene, callbacks: TouchCallbacks) {
+    const width = scene.scale.width;
+    const height = scene.scale.height;
+
+    this.joystickCenter = new Phaser.Math.Vector2(70, height - 84);
+    this.leftZoneMaxX = width * 0.5;
+    this.leftZoneMinY = height - 200;
+
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(50);
 
     this.joystickBase = scene.add.circle(this.joystickCenter.x, this.joystickCenter.y, 34, 0x20343d, 0.8);
     this.joystickStick = scene.add.circle(this.joystickCenter.x, this.joystickCenter.y, 16, 0x8acb88, 0.95);
     this.root.add([this.joystickBase, this.joystickStick]);
 
-    this.makeButton(244, 424, "ATK", callbacks.onAttack);
-    this.makeButton(196, 456, "ACT", callbacks.onInteract);
-    this.makeButton(244, 488, "P5", callbacks.onPotion);
-    this.makeButton(204, 364, "INV", callbacks.onInventory, 24);
-    this.makeButton(244, 328, "STAT", callbacks.onStats, 24);
-    this.makeButton(244, 280, "QST", callbacks.onQuests, 24);
+    const rightMainX = width - 54;
+    const rightAltX = width - 102;
+    const baseY = height - 94;
+
+    this.makeButton(rightMainX, baseY, "ATK", callbacks.onAttack);
+    this.makeButton(rightAltX, baseY + 32, "ACT", callbacks.onInteract);
+    this.makeButton(rightMainX, baseY + 64, "P5", callbacks.onPotion);
+
+    this.makeButton(rightAltX, height - 166, "INV", callbacks.onInventory, 24);
+    this.makeButton(rightMainX, height - 198, "STAT", callbacks.onStats, 24);
+    this.makeButton(rightMainX, height - 246, "QST", callbacks.onQuests, 24);
 
     this.joystickBase.setInteractive(
       new Phaser.Geom.Circle(this.joystickCenter.x, this.joystickCenter.y, 42),
@@ -38,7 +52,7 @@ export class InputTouchManager {
     );
 
     this.scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (pointer.x < 144 && pointer.y > 320 && this.activePointerId === null) {
+      if (pointer.x < this.leftZoneMaxX && pointer.y > this.leftZoneMinY && this.activePointerId === null) {
         this.activePointerId = pointer.id;
         this.updateJoystick(pointer);
       }
@@ -88,7 +102,7 @@ export class InputTouchManager {
   ): void {
     const bg = this.scene.add.circle(x, y, radius, 0x20343d, 0.92);
     const txt = this.scene.add.text(x, y, label, {
-      fontFamily: "Trebuchet MS",
+      fontFamily: "Press Start 2P",
       fontSize: radius >= 28 ? "12px" : "10px",
       color: "#f6f1d8"
     }).setOrigin(0.5);

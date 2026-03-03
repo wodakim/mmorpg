@@ -7,6 +7,7 @@ import { InputTouchManager } from "../managers/InputTouchManager";
 import { createButton, createDiv, createInput, createPanel } from "../ui/dom";
 import { clearNode } from "../ui/dom";
 import { resetOverlay } from "../ui/overlay";
+import { showConstructionPopup } from "../ui/popup";
 
 type AvatarObjects = {
   container: Phaser.GameObjects.Container;
@@ -35,6 +36,8 @@ export class GameScene extends Phaser.Scene {
   private questsPanel?: HTMLDivElement;
   private toastBadge?: HTMLDivElement;
   private toastTimer?: number;
+  private chatCollapsed = true;
+  private hudCollapsed = true;
 
   constructor() {
     super("GameScene");
@@ -135,7 +138,7 @@ export class GameScene extends Phaser.Scene {
     graphics.fillRect(356, 456, 48, 96);
 
     this.add.text(384, 338, "Village", {
-      fontFamily: "Trebuchet MS",
+      fontFamily: "Press Start 2P",
       fontSize: "14px",
       color: "#f6f1d8"
     }).setOrigin(0.5);
@@ -151,7 +154,7 @@ export class GameScene extends Phaser.Scene {
     const body = this.add.rectangle(0, -10, 16, 18, 0xffffff);
     const hair = this.add.rectangle(0, -22, 16, 8, 0xffffff);
     const label = this.add.text(0, -38, labelText, {
-      fontFamily: "Trebuchet MS",
+      fontFamily: "Press Start 2P",
       fontSize: "10px",
       color: "#f6f1d8",
       stroke: "#0d1114",
@@ -210,7 +213,7 @@ export class GameScene extends Phaser.Scene {
       if (!node) {
         const body = this.add.circle(0, 0, 16, 0x75d36f);
         const eyes = this.add.text(0, -2, ":)", {
-          fontFamily: "Trebuchet MS",
+          fontFamily: "Press Start 2P",
           fontSize: "10px",
           color: "#0d1114"
         }).setOrigin(0.5);
@@ -297,16 +300,28 @@ export class GameScene extends Phaser.Scene {
 
   private buildHud(overlay: HTMLDivElement): void {
     const top = createPanel("top");
-    const topBar = createDiv("hud-bar");
+    top.classList.add("collapsible-panel");
+    const topToggle = createButton("HUD", "button small secondary");
+    const topBar = createDiv("hud-bar hidden");
     const toastBadge = createDiv("badge hidden");
     topBar.appendChild(createDiv("badge", "Connected"));
     topBar.appendChild(toastBadge);
-    top.appendChild(topBar);
+    top.append(topToggle, topBar);
+
+    topToggle.addEventListener("click", () => {
+      this.hudCollapsed = !this.hudCollapsed;
+      topBar.classList.toggle("hidden", this.hudCollapsed);
+      topToggle.textContent = this.hudCollapsed ? "HUD" : "Fermer HUD";
+    });
 
     const bottom = createPanel("bottom");
-    const chatList = createDiv("list");
+    bottom.classList.add("collapsible-panel", "chat-panel");
+    const chatToggle = createButton("Chat", "button small secondary");
+    const chatList = createDiv("list hidden");
     const input = createInput("Chat with the bot or nearby players", "", 140);
-    const send = createButton("Send");
+    input.classList.add("hidden");
+    const send = createButton("Send", "button small");
+    send.classList.add("hidden");
 
     const sendChat = () => {
       const text = input.value.trim();
@@ -317,6 +332,14 @@ export class GameScene extends Phaser.Scene {
       input.value = "";
     };
 
+    chatToggle.addEventListener("click", () => {
+      this.chatCollapsed = !this.chatCollapsed;
+      chatList.classList.toggle("hidden", this.chatCollapsed);
+      input.classList.toggle("hidden", this.chatCollapsed);
+      send.classList.toggle("hidden", this.chatCollapsed);
+      chatToggle.textContent = this.chatCollapsed ? "Chat" : "Fermer chat";
+    });
+
     send.addEventListener("click", sendChat);
     input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -325,7 +348,7 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    bottom.append(chatList, input, send);
+    bottom.append(chatToggle, chatList, input, send);
 
     this.inventoryPanel = createPanel("center");
     this.inventoryPanel.classList.add("hidden");
@@ -420,11 +443,24 @@ export class GameScene extends Phaser.Scene {
     const group = createButton("Group", "button small");
     const blacklist = createButton("Blacklist", "button small");
     const report = createButton("Report", "button small");
-    addFriend.addEventListener("click", () => network.addFriend(socialTarget.value.trim()));
-    group.addEventListener("click", () => network.toggleGroup(socialTarget.value.trim()));
-    blacklist.addEventListener("click", () => network.toggleBlacklist(socialTarget.value.trim()));
-    report.addEventListener("click", () => network.report(socialTarget.value.trim(), reason.value.trim() || "mvp-report"));
-    socialRow.append(addFriend, group, blacklist, report);
+    const guild = createButton("Guild", "button small secondary");
+
+    const requireTarget = (action: () => void) => {
+      if (!socialTarget.value.trim()) {
+        showConstructionPopup("Action incomplète", "Entre un pseudo cible pour valider l'action sociale.");
+        return;
+      }
+      action();
+    };
+
+    addFriend.addEventListener("click", () => requireTarget(() => network.addFriend(socialTarget.value.trim())));
+    group.addEventListener("click", () => requireTarget(() => network.toggleGroup(socialTarget.value.trim())));
+    blacklist.addEventListener("click", () => requireTarget(() => network.toggleBlacklist(socialTarget.value.trim())));
+    report.addEventListener("click", () => requireTarget(() => network.report(socialTarget.value.trim(), reason.value.trim() || "mvp-report")));
+    guild.addEventListener("click", () => {
+      showConstructionPopup("Guild", "Le système de guilde est branché côté UI avec popup de construction pour ce MVP.");
+    });
+    socialRow.append(addFriend, group, blacklist, report, guild);
     questStack.append(socialTarget, reason, socialRow);
     questStack.appendChild(createDiv("subtitle", `Friends: ${self.social.friends.join(", ") || "-"}`));
     questStack.appendChild(createDiv("subtitle", `Group: ${self.social.groupMembers.join(", ") || "-"}`));

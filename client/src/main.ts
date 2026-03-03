@@ -1,5 +1,5 @@
 import "./styles/main.css";
-import { createGame, GAME_HEIGHT, GAME_WIDTH } from "./game";
+import { createGame, getAdaptiveGameSize } from "./game";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) {
@@ -19,17 +19,42 @@ canvasWrap.appendChild(overlay);
 shell.appendChild(canvasWrap);
 app.appendChild(shell);
 
-const game = createGame(canvasWrap);
+const initialSize = getAdaptiveGameSize(window.innerWidth, window.innerHeight);
+canvasWrap.style.width = `${initialSize.width}px`;
+canvasWrap.style.height = `${initialSize.height}px`;
+const game = createGame(canvasWrap, initialSize);
 
-function resizeGame(): void {
-  const scale = Math.max(1, Math.floor(Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT)));
-  canvasWrap.style.width = `${GAME_WIDTH * scale}px`;
-  canvasWrap.style.height = `${GAME_HEIGHT * scale}px`;
+function getVisualViewportMetrics(): { height: number; offsetTop: number; bottomInset: number } {
+  const viewport = window.visualViewport;
+  if (!viewport) {
+    return {
+      height: window.innerHeight,
+      offsetTop: 0,
+      bottomInset: 0
+    };
+  }
+
+  const height = Math.floor(viewport.height);
+  const offsetTop = Math.max(0, Math.floor(viewport.offsetTop));
+  const bottomInset = Math.max(0, Math.floor(window.innerHeight - (viewport.height + viewport.offsetTop)));
+
+  return { height, offsetTop, bottomInset };
 }
 
-window.addEventListener("resize", resizeGame);
-window.addEventListener("orientationchange", resizeGame);
-resizeGame();
+function applyViewportMetrics(): void {
+  const metrics = getVisualViewportMetrics();
+  canvasWrap.style.setProperty("--vv-height", `${metrics.height}px`);
+  canvasWrap.style.setProperty("--vv-offset-top", `${metrics.offsetTop}px`);
+  canvasWrap.style.setProperty("--vv-bottom-inset", `${metrics.bottomInset}px`);
+}
+
+window.addEventListener("resize", applyViewportMetrics);
+window.addEventListener("orientationchange", () => {
+  window.location.reload();
+});
+window.visualViewport?.addEventListener("resize", applyViewportMetrics, { passive: true });
+window.visualViewport?.addEventListener("scroll", applyViewportMetrics, { passive: true });
+applyViewportMetrics();
 
 document.addEventListener(
   "visibilitychange",
