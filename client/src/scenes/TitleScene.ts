@@ -1,48 +1,120 @@
 import Phaser from "phaser";
 import { resetOverlay } from "../ui/overlay";
 
-type TexturePlacement = {
+type Placement = {
   key: string;
   x: number;
   y: number;
+  originX?: number;
+  originY?: number;
   scale?: number;
   alpha?: number;
+  fallbackWidth?: number;
+  fallbackHeight?: number;
+  fallbackColor?: number;
+  depth?: number;
 };
 
+type TwoFrameConfig = {
+  keyA: string;
+  keyB: string;
+  x: number;
+  y: number;
+  intervalMs?: number;
+  scale?: number;
+  alpha?: number;
+  depth?: number;
+};
+
+const SHOW_MOCKUP_OVERLAY = false;
+
 const TITLE_TEXTURES = {
-  frameTop: "title_frame_top",
-  frameBottom: "title_frame_bottom",
-  frameLeft: "title_frame_left",
-  frameRight: "title_frame_right",
-  crystalPinkTall: "title_crystal_pink_tall",
-  crystalBlueTall: "title_crystal_blue_tall",
-  crystalPinkPedestal: "title_crystal_pink_pedestal",
-  crystalBluePedestal: "title_crystal_blue_pedestal",
-  sparkleCenter: "title_sparkle_center",
-  flameLargeA: "title_flame_large_a",
-  flameLargeB: "title_flame_large_b",
-  flameLargeC: "title_flame_large_c",
-  flameLargeD: "title_flame_large_d",
-  flameSmallA: "title_flame_small_a",
-  flameSmallB: "title_flame_small_b"
+  mockup: "title_mockup",
+  background: "title_background",
+
+  frameCornerUpLeft: "title_frame_corner_up_left",
+  frameCornerUpRight: "title_frame_corner_up_right",
+  frameCornerDownLeft: "title_frame_corner_down_left",
+  frameCornerDownRight: "title_frame_corner_down_right",
+  frameBarHorizontal: "title_frame_bar_horizontal",
+  frameBarVertical: "title_frame_bar_vertical",
+  frameMiddleUp: "title_frame_middle_up",
+  frameMiddleDown: "title_frame_middle_down",
+  frameMiddleLeft: "title_frame_middle_left",
+  frameMiddleRight: "title_frame_middle_right",
+  frameDecorUpLeft: "title_frame_decor_up_left",
+  frameDecorUpRight: "title_frame_decor_up_right",
+  frameDecorDownLeft: "title_frame_decor_down_left",
+  frameDecorDownRight: "title_frame_decor_down_right",
+  frameDecorJewel: "title_frame_decor_jewel",
+
+  brandingLogo: "title_branding_logo",
+  brandingLogoBg01: "title_branding_logobg_01",
+  brandingLogoBg02: "title_branding_logobg_02",
+  brandingLogoBg2: "title_branding_logobg2",
+
+  heroIdle01: "title_hero_idle_01",
+  heroIdle02: "title_hero_idle_02",
+  demonIdle01: "title_demon_idle_01",
+  demonIdle02: "title_demon_idle_02",
+
+  ctaButton: "title_cta_button",
+
+  rayBlue01: "title_ray_blue_01",
+  rayBlue02: "title_ray_blue_02",
+  rayPurple01: "title_ray_purple_01",
+  rayPurple02: "title_ray_purple_02",
+
+  flame01: "title_flame_01",
+  flame02: "title_flame_02",
+  flame03: "title_flame_03",
+  flame2_01: "title_flame2_01",
+  flame2_02: "title_flame2_02",
+  flame2_03: "title_flame2_03"
 } as const;
 
 const TITLE_TEXTURE_LOADS: Array<{ key: string; path: string }> = [
-  { key: TITLE_TEXTURES.frameTop, path: "assets/title/frame/asset_frame_bar_top_gem.png" },
-  { key: TITLE_TEXTURES.frameBottom, path: "assets/title/frame/asset_frame_bar_bottom_gem.png" },
-  { key: TITLE_TEXTURES.frameLeft, path: "assets/title/frame/asset_frame_bar_left_gem.png" },
-  { key: TITLE_TEXTURES.frameRight, path: "assets/title/frame/asset_frame_bar_right_gem.png" },
-  { key: TITLE_TEXTURES.crystalPinkTall, path: "assets/title/vfx/asset_crystal_pink_tall.png" },
-  { key: TITLE_TEXTURES.crystalBlueTall, path: "assets/title/vfx/asset_crystal_blue_tall.png" },
-  { key: TITLE_TEXTURES.crystalPinkPedestal, path: "assets/title/vfx/asset_crystal_pink_pedestal.png" },
-  { key: TITLE_TEXTURES.crystalBluePedestal, path: "assets/title/vfx/asset_crystal_blue_pedestal.png" },
-  { key: TITLE_TEXTURES.sparkleCenter, path: "assets/title/vfx/asset_sparkle_center.png" },
-  { key: TITLE_TEXTURES.flameLargeA, path: "assets/title/vfx/asset_flame_blue_large_a.png" },
-  { key: TITLE_TEXTURES.flameLargeB, path: "assets/title/vfx/asset_flame_blue_large_b.png" },
-  { key: TITLE_TEXTURES.flameLargeC, path: "assets/title/vfx/asset_flame_blue_large_c.png" },
-  { key: TITLE_TEXTURES.flameLargeD, path: "assets/title/vfx/asset_flame_blue_large_d.png" },
-  { key: TITLE_TEXTURES.flameSmallA, path: "assets/title/vfx/asset_flame_blue_small_a.png" },
-  { key: TITLE_TEXTURES.flameSmallB, path: "assets/title/vfx/asset_flame_blue_small_b.png" }
+  { key: TITLE_TEXTURES.mockup, path: "assets/title/mockup/Mockup_titlescreen.png" },
+  { key: TITLE_TEXTURES.background, path: "assets/title/background/asset_image_background_titlescreen.png" },
+
+  { key: TITLE_TEXTURES.frameCornerUpLeft, path: "assets/title/frame/asset_ornement_corner_up_left.png" },
+  { key: TITLE_TEXTURES.frameCornerUpRight, path: "assets/title/frame/asset_ornement_corner_up_right.png" },
+  { key: TITLE_TEXTURES.frameCornerDownLeft, path: "assets/title/frame/asset_ornement_corner_down_left.png" },
+  { key: TITLE_TEXTURES.frameCornerDownRight, path: "assets/title/frame/asset_ornement_corner_down_right.png" },
+  { key: TITLE_TEXTURES.frameBarHorizontal, path: "assets/title/frame/asset_ornement_bar_horizontal.png" },
+  { key: TITLE_TEXTURES.frameBarVertical, path: "assets/title/frame/asset_ornement_bar_vertical.png" },
+  { key: TITLE_TEXTURES.frameMiddleUp, path: "assets/title/frame/asset_ornement_middle_up.png" },
+  { key: TITLE_TEXTURES.frameMiddleDown, path: "assets/title/frame/asset_ornement_middle_down.png" },
+  { key: TITLE_TEXTURES.frameMiddleLeft, path: "assets/title/frame/asset_ornement_middle_left.png" },
+  { key: TITLE_TEXTURES.frameMiddleRight, path: "assets/title/frame/asset_ornement_middle_right.png" },
+  { key: TITLE_TEXTURES.frameDecorUpLeft, path: "assets/title/frame/asset_ornement_decor_up_left.png" },
+  { key: TITLE_TEXTURES.frameDecorUpRight, path: "assets/title/frame/asset_ornement_decor_up_right.png" },
+  { key: TITLE_TEXTURES.frameDecorDownLeft, path: "assets/title/frame/asset_ornement_decor_down_left.png" },
+  { key: TITLE_TEXTURES.frameDecorDownRight, path: "assets/title/frame/asset_ornement_decor_down_right.png" },
+  { key: TITLE_TEXTURES.frameDecorJewel, path: "assets/title/frame/asset_ornement_decor_jewel.png" },
+
+  { key: TITLE_TEXTURES.brandingLogo, path: "assets/title/branding/asset_branding_logo_sample_v01.png" },
+  { key: TITLE_TEXTURES.brandingLogoBg01, path: "assets/title/branding/asset_branding_logobg_sprite_01.png" },
+  { key: TITLE_TEXTURES.brandingLogoBg02, path: "assets/title/branding/asset_branding_logobg_sprite_02.png" },
+  { key: TITLE_TEXTURES.brandingLogoBg2, path: "assets/title/branding/asset_branding_logobg2_sprite_01.png" },
+
+  { key: TITLE_TEXTURES.heroIdle01, path: "assets/title/entities/asset_entity_character_hero_idle_sprite_01.png" },
+  { key: TITLE_TEXTURES.heroIdle02, path: "assets/title/entities/asset_entity_character_hero_idle_sprite_02.png" },
+  { key: TITLE_TEXTURES.demonIdle01, path: "assets/title/entities/asset_entity_enemy_demon_idle_sprite_01.png" },
+  { key: TITLE_TEXTURES.demonIdle02, path: "assets/title/entities/asset_entity_enemy_demon_idle_sprite_02.png" },
+
+  { key: TITLE_TEXTURES.ctaButton, path: "assets/title/cta/asset_btn_start_sample_v01.png" },
+
+  { key: TITLE_TEXTURES.rayBlue01, path: "assets/title/vfx/asset_effect_blueray_sprite_01.png" },
+  { key: TITLE_TEXTURES.rayBlue02, path: "assets/title/vfx/asset_effect_blueray_sprite_02.png" },
+  { key: TITLE_TEXTURES.rayPurple01, path: "assets/title/vfx/asset_effect_purpleray_sprite_01.png" },
+  { key: TITLE_TEXTURES.rayPurple02, path: "assets/title/vfx/asset_effect_purpleray_sprite_02.png" },
+  { key: TITLE_TEXTURES.flame01, path: "assets/title/vfx/asset_effect_candleflamme_sprite_01.png" },
+  { key: TITLE_TEXTURES.flame02, path: "assets/title/vfx/asset_effect_candleflamme_sprite_02.png" },
+  { key: TITLE_TEXTURES.flame03, path: "assets/title/vfx/asset_effect_candleflamme_sprite_03.png" },
+  { key: TITLE_TEXTURES.flame2_01, path: "assets/title/vfx/asset_effect_candleflamme2_sprite_01.png" },
+  { key: TITLE_TEXTURES.flame2_02, path: "assets/title/vfx/asset_effect_candleflamme2_sprite_02.png" },
+  { key: TITLE_TEXTURES.flame2_03, path: "assets/title/vfx/asset_effect_candleflamme2_sprite_03.png" }
 ];
 
 export class TitleScene extends Phaser.Scene {
@@ -62,65 +134,36 @@ export class TitleScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
     const centerX = width / 2;
-    const centerY = height / 2;
 
-    this.cameras.main.setBackgroundColor("#0f1726");
-    this.add.rectangle(centerX, centerY, width, height, 0x0f1726, 1);
+    this.cameras.main.setBackgroundColor("#0a1833");
+
+    this.addTextureOrFallback({
+      key: TITLE_TEXTURES.background,
+      x: centerX,
+      y: height / 2,
+      depth: 0,
+      fallbackWidth: width,
+      fallbackHeight: height,
+      fallbackColor: 0x0a1833
+    });
+
+    if (SHOW_MOCKUP_OVERLAY && this.textures.exists(TITLE_TEXTURES.mockup)) {
+      this.add.image(centerX, height / 2, TITLE_TEXTURES.mockup).setAlpha(0.25).setDepth(99);
+    }
 
     this.renderFrame(width, height);
-    this.renderArcaneLights(width, height);
-
-    const titleY = Math.max(90, height * 0.26);
-    this.add
-      .text(centerX, titleY, "MAESTRIA PIXEL", {
-        fontFamily: "Press Start 2P",
-        fontSize: width >= 360 ? "28px" : "24px",
-        color: "#efe9cf",
-        align: "center"
-      })
-      .setOrigin(0.5)
-      .setShadow(0, 3, "#000000", 8, false, true);
-
-    this.add
-      .text(centerX, titleY + 34, "Boucle Infinie", {
-        fontFamily: "Press Start 2P",
-        fontSize: "12px",
-        color: "#9fd7ff"
-      })
-      .setOrigin(0.5);
-
-    const buttonWidth = Math.min(width - 30, 290);
-    const buttonHeight = 64;
-    const buttonY = Math.min(height - 110, centerY + 180);
-
-    const startButton = this.add
-      .rectangle(centerX, buttonY, buttonWidth, buttonHeight, 0x57c8ff, 0.88)
-      .setStrokeStyle(3, 0xd3f5ff, 1)
-      .setInteractive({ useHandCursor: false });
-
-    const startLabel = this.add
-      .text(centerX, buttonY, "Tap to Start", {
-        fontFamily: "Press Start 2P",
-        fontSize: "20px",
-        color: "#001926"
-      })
-      .setOrigin(0.5);
+    this.renderBranding(width, height);
+    this.renderEntities(width, height);
+    this.renderBottomVfxAndCta(width, height);
 
     const hint = this.add
-      .text(centerX, buttonY + 48, "Touchez l'écran pour continuer", {
+      .text(centerX, height * 0.9, "Touchez l'écran pour continuer", {
         fontFamily: "Press Start 2P",
         fontSize: "11px",
-        color: "#9fd7ff"
+        color: "#eef3ff"
       })
-      .setOrigin(0.5);
-
-    this.tweens.add({
-      targets: [startButton, startLabel],
-      alpha: { from: 1, to: 0.74 },
-      yoyo: true,
-      repeat: -1,
-      duration: 920
-    });
+      .setOrigin(0.5)
+      .setDepth(50);
 
     let started = false;
     const startGame = () => {
@@ -131,80 +174,213 @@ export class TitleScene extends Phaser.Scene {
       this.scene.start("MenuScene");
     };
 
-    startButton.on("pointerdown", startGame);
     this.input.once("pointerdown", startGame);
     hint.setInteractive({ useHandCursor: false }).on("pointerdown", startGame);
   }
 
   private renderFrame(width: number, height: number): void {
     const centerX = width / 2;
-    const topY = 34;
-    const bottomY = height - 34;
-    const leftX = 24;
-    const rightX = width - 24;
+    const centerY = height / 2;
+    const sideInset = 14;
+    const topInset = 14;
+    const bottomInset = 14;
 
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameTop, x: centerX, y: topY, scale: 0.85 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBottom, x: centerX, y: bottomY, scale: 0.85 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameLeft, x: leftX, y: height / 2, scale: 0.85 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameRight, x: rightX, y: height / 2, scale: 0.85 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarHorizontal, x: centerX, y: topInset, originY: 0, depth: 40, fallbackWidth: width - 48, fallbackHeight: 24 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarHorizontal, x: centerX, y: height - bottomInset, originY: 1, depth: 40, fallbackWidth: width - 48, fallbackHeight: 24 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarVertical, x: sideInset, y: centerY, originX: 0, depth: 40, fallbackWidth: 24, fallbackHeight: height - 48 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameBarVertical, x: width - sideInset, y: centerY, originX: 1, depth: 40, fallbackWidth: 24, fallbackHeight: height - 48 });
+
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerUpLeft, x: sideInset, y: topInset, originX: 0, originY: 0, depth: 42 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerUpRight, x: width - sideInset, y: topInset, originX: 1, originY: 0, depth: 42 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerDownLeft, x: sideInset, y: height - bottomInset, originX: 0, originY: 1, depth: 42 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameCornerDownRight, x: width - sideInset, y: height - bottomInset, originX: 1, originY: 1, depth: 42 });
+
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleUp, x: centerX, y: topInset, originY: 0, depth: 43 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleDown, x: centerX, y: height - bottomInset, originY: 1, depth: 43 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleLeft, x: sideInset, y: centerY, originX: 0, depth: 43 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameMiddleRight, x: width - sideInset, y: centerY, originX: 1, depth: 43 });
+
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorUpLeft, x: width * 0.22, y: height * 0.23, depth: 35 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorUpRight, x: width * 0.78, y: height * 0.23, depth: 35 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorDownLeft, x: width * 0.22, y: height * 0.72, depth: 35 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorDownRight, x: width * 0.78, y: height * 0.72, depth: 35 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorJewel, x: centerX, y: topInset + 16, depth: 45 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.frameDecorJewel, x: centerX, y: height - bottomInset - 16, depth: 45 });
   }
 
-  private renderArcaneLights(width: number, height: number): void {
+  private renderBranding(width: number, height: number): void {
     const centerX = width / 2;
-    const centerY = height / 2;
+    const logoY = height * 0.2;
 
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.crystalPinkTall, x: centerX - 116, y: centerY + 54, scale: 0.9, alpha: 0.9 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.crystalBlueTall, x: centerX + 116, y: centerY + 54, scale: 0.9, alpha: 0.9 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.crystalPinkPedestal, x: centerX - 60, y: centerY + 120, scale: 0.9, alpha: 0.95 });
-    this.addTextureOrFallback({ key: TITLE_TEXTURES.crystalBluePedestal, x: centerX + 60, y: centerY + 120, scale: 0.9, alpha: 0.95 });
+    this.toggleTwoFrame({
+      keyA: TITLE_TEXTURES.brandingLogoBg01,
+      keyB: TITLE_TEXTURES.brandingLogoBg02,
+      x: centerX,
+      y: logoY - 4,
+      intervalMs: 560,
+      depth: 10,
+      alpha: 0.85,
+      scale: 0.95
+    });
 
-    const sparkle = this.addTextureOrFallback({ key: TITLE_TEXTURES.sparkleCenter, x: centerX, y: centerY + 10, scale: 0.9, alpha: 0.88 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.brandingLogo, x: centerX, y: logoY, depth: 20, fallbackWidth: 220, fallbackHeight: 64, fallbackColor: 0x223850 });
+    this.addTextureOrFallback({ key: TITLE_TEXTURES.brandingLogoBg2, x: centerX - 95, y: logoY + 22, depth: 22, alpha: 0.9 });
+
+    this.add
+      .text(centerX, logoY + 92, "Boucle Infinie", {
+        fontFamily: "Press Start 2P",
+        fontSize: "16px",
+        color: "#ffffff",
+        stroke: "#0c1425",
+        strokeThickness: 5
+      })
+      .setOrigin(0.5)
+      .setDepth(25);
+
+    this.add
+      .text(centerX, logoY + 132, "MMORPG mobile portrait-first", {
+        fontFamily: "Press Start 2P",
+        fontSize: "11px",
+        color: "#eef3ff",
+        stroke: "#0c1425",
+        strokeThickness: 4
+      })
+      .setOrigin(0.5)
+      .setDepth(25);
+  }
+
+  private renderEntities(width: number, height: number): void {
+    this.toggleTwoFrame({
+      keyA: TITLE_TEXTURES.heroIdle01,
+      keyB: TITLE_TEXTURES.heroIdle02,
+      x: width * 0.22,
+      y: height * 0.78,
+      intervalMs: 620,
+      depth: 26,
+      scale: 1
+    });
+
+    this.toggleTwoFrame({
+      keyA: TITLE_TEXTURES.demonIdle01,
+      keyB: TITLE_TEXTURES.demonIdle02,
+      x: width * 0.78,
+      y: height * 0.78,
+      intervalMs: 620,
+      depth: 26,
+      scale: 1
+    });
+  }
+
+  private renderBottomVfxAndCta(width: number, height: number): void {
+    const centerX = width / 2;
+    const ctaY = height * 0.82;
+
+    this.toggleTwoFrame({ keyA: TITLE_TEXTURES.rayPurple01, keyB: TITLE_TEXTURES.rayPurple02, x: centerX - 40, y: ctaY - 16, intervalMs: 420, depth: 18, alpha: 0.95 });
+    this.toggleTwoFrame({ keyA: TITLE_TEXTURES.rayBlue01, keyB: TITLE_TEXTURES.rayBlue02, x: centerX + 40, y: ctaY - 16, intervalMs: 420, depth: 18, alpha: 0.95 });
+
+    this.cycleThreeFrame([TITLE_TEXTURES.flame01, TITLE_TEXTURES.flame02, TITLE_TEXTURES.flame03], centerX - 82, ctaY - 78, 260, 17);
+    this.cycleThreeFrame([TITLE_TEXTURES.flame2_01, TITLE_TEXTURES.flame2_02, TITLE_TEXTURES.flame2_03], centerX + 82, ctaY - 78, 260, 17);
+
+    const cta = this.addTextureOrFallback({
+      key: TITLE_TEXTURES.ctaButton,
+      x: centerX,
+      y: ctaY,
+      depth: 30,
+      fallbackWidth: 280,
+      fallbackHeight: 84,
+      fallbackColor: 0x7a8ea5
+    }).setInteractive({ useHandCursor: false });
+
     this.tweens.add({
-      targets: sparkle,
-      alpha: { from: 0.5, to: 1 },
-      scaleX: { from: 0.82, to: 1 },
-      scaleY: { from: 0.82, to: 1 },
+      targets: cta,
+      alpha: { from: 1, to: 0.86 },
       yoyo: true,
       repeat: -1,
-      duration: 1250,
-      ease: "Sine.easeInOut"
+      duration: 820
     });
 
-    const flames = [
-      { key: TITLE_TEXTURES.flameLargeA, x: centerX - 164, y: centerY + 46 },
-      { key: TITLE_TEXTURES.flameLargeB, x: centerX - 136, y: centerY + 78 },
-      { key: TITLE_TEXTURES.flameLargeC, x: centerX + 136, y: centerY + 76 },
-      { key: TITLE_TEXTURES.flameLargeD, x: centerX + 164, y: centerY + 46 },
-      { key: TITLE_TEXTURES.flameSmallA, x: centerX - 184, y: centerY + 12 },
-      { key: TITLE_TEXTURES.flameSmallB, x: centerX + 184, y: centerY + 12 }
-    ];
-
-    flames.forEach((entry, index) => {
-      const flame = this.addTextureOrFallback({ key: entry.key, x: entry.x, y: entry.y, scale: 0.92, alpha: 0.85 });
-      this.tweens.add({
-        targets: flame,
-        y: flame.y - 6,
-        alpha: { from: 0.5, to: 0.95 },
-        yoyo: true,
-        repeat: -1,
-        duration: 700 + index * 120,
-        delay: index * 70,
-        ease: "Sine.easeInOut"
-      });
+    cta.on("pointerdown", () => {
+      this.scene.start("MenuScene");
     });
   }
 
-  private addTextureOrFallback(config: TexturePlacement): Phaser.GameObjects.GameObject & { x: number; y: number } {
-    const { key, x, y, scale = 1, alpha = 1 } = config;
+  private toggleTwoFrame(config: TwoFrameConfig): void {
+    const {
+      keyA,
+      keyB,
+      x,
+      y,
+      intervalMs = 500,
+      scale = 1,
+      alpha = 1,
+      depth = 0
+    } = config;
+
+    const frameA = this.addTextureOrFallback({ key: keyA, x, y, scale, alpha, depth, fallbackWidth: 22, fallbackHeight: 22 });
+    const frameB = this.addTextureOrFallback({ key: keyB, x, y, scale, alpha: 0, depth, fallbackWidth: 22, fallbackHeight: 22 });
+
+    this.time.addEvent({
+      delay: intervalMs,
+      loop: true,
+      callback: () => {
+        const nextA = frameA.alpha < 0.5 ? alpha : 0;
+        frameA.setAlpha(nextA);
+        frameB.setAlpha(nextA > 0 ? 0 : alpha);
+      }
+    });
+  }
+
+  private cycleThreeFrame(keys: string[], x: number, y: number, intervalMs: number, depth: number): void {
+    const sprites = keys.map((key, index) =>
+      this.addTextureOrFallback({
+        key,
+        x,
+        y,
+        alpha: index === 0 ? 0.92 : 0,
+        depth,
+        fallbackWidth: 20,
+        fallbackHeight: 28,
+        fallbackColor: 0x77d5ff
+      })
+    );
+
+    let frameIndex = 0;
+    this.time.addEvent({
+      delay: intervalMs,
+      loop: true,
+      callback: () => {
+        frameIndex = (frameIndex + 1) % sprites.length;
+        sprites.forEach((sprite, index) => {
+          sprite.setAlpha(index === frameIndex ? 0.92 : 0);
+        });
+      }
+    });
+  }
+
+  private addTextureOrFallback(config: Placement): Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle {
+    const {
+      key,
+      x,
+      y,
+      originX = 0.5,
+      originY = 0.5,
+      scale = 1,
+      alpha = 1,
+      fallbackWidth = 18,
+      fallbackHeight = 18,
+      fallbackColor = 0x4c81b8,
+      depth = 0
+    } = config;
 
     if (this.textures.exists(key)) {
-      return this.add.image(x, y, key).setScale(scale).setAlpha(alpha);
+      return this.add.image(x, y, key).setOrigin(originX, originY).setScale(scale).setAlpha(alpha).setDepth(depth);
     }
 
     return this.add
-      .rectangle(x, y, 16, 16, 0x57c8ff, 0.5)
-      .setStrokeStyle(1, 0xd3f5ff, 0.8)
+      .rectangle(x, y, fallbackWidth, fallbackHeight, fallbackColor, alpha)
+      .setOrigin(originX, originY)
       .setScale(scale)
-      .setAlpha(alpha);
+      .setDepth(depth)
+      .setStrokeStyle(1, 0xe4f3ff, 0.7);
   }
 }

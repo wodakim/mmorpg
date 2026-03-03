@@ -1,36 +1,55 @@
 # Title Screen Assets
 
-This directory contains title-screen assets organized by role.
+This folder contains the title-screen asset set used by `client/src/scenes/TitleScene.ts`.
 
-## Folder layout
+## Required files (exact names)
 
-- `background/`
-- `frame/`
-- `branding/`
-- `entities/`
-- `vfx/`
-- `cta/`
-- `mockup/`
+### `mockup/`
+- `Mockup_titlescreen.png`
 
-## Expected file names for the current title-screen pass
+### `background/`
+- `asset_image_background_titlescreen.png`
 
 ### `frame/`
-- `asset_frame_bar_top_gem.png`
-- `asset_frame_bar_bottom_gem.png`
-- `asset_frame_bar_left_gem.png`
-- `asset_frame_bar_right_gem.png`
+- `asset_ornement_corner_up_left.png`
+- `asset_ornement_corner_up_right.png`
+- `asset_ornement_corner_down_left.png`
+- `asset_ornement_corner_down_right.png`
+- `asset_ornement_bar_horizontal.png`
+- `asset_ornement_bar_vertical.png`
+- `asset_ornement_middle_up.png`
+- `asset_ornement_middle_down.png`
+- `asset_ornement_middle_left.png`
+- `asset_ornement_middle_right.png`
+- `asset_ornement_decor_up_left.png`
+- `asset_ornement_decor_up_right.png`
+- `asset_ornement_decor_down_left.png`
+- `asset_ornement_decor_down_right.png`
+- `asset_ornement_decor_jewel.png`
+
+### `branding/`
+- `asset_branding_logo_sample_v01.png`
+- `asset_branding_logobg_sprite_01.png`
+- `asset_branding_logobg_sprite_02.png`
+- `asset_branding_logobg2_sprite_01.png`
+
+### `entities/`
+- `asset_entity_character_hero_idle_sprite_01.png`
+- `asset_entity_character_hero_idle_sprite_02.png`
+- `asset_entity_enemy_demon_idle_sprite_01.png`
+- `asset_entity_enemy_demon_idle_sprite_02.png`
+
+### `cta/`
+- `asset_btn_start_sample_v01.png`
 
 ### `vfx/`
-- `asset_crystal_pink_tall.png`
-- `asset_crystal_blue_tall.png`
-- `asset_crystal_pink_pedestal.png`
-- `asset_crystal_blue_pedestal.png`
-- `asset_sparkle_center.png`
-- `asset_flame_blue_large_a.png`
-- `asset_flame_blue_large_b.png`
-- `asset_flame_blue_large_c.png`
-- `asset_flame_blue_large_d.png`
-- `asset_flame_blue_small_a.png`
-- `asset_flame_blue_small_b.png`
-
-These 15 files are loaded by `client/src/scenes/TitleScene.ts`.
+- `asset_effect_blueray_sprite_01.png`
+- `asset_effect_blueray_sprite_02.png`
+- `asset_effect_purpleray_sprite_01.png`
+- `asset_effect_purpleray_sprite_02.png`
+- `asset_effect_candleflamme_sprite_01.png`
+- `asset_effect_candleflamme_sprite_02.png`
+- `asset_effect_candleflamme_sprite_03.png`
+- `asset_effect_candleflamme2_sprite_01.png`
+- `asset_effect_candleflamme2_sprite_02.png`
+- `asset_effect_candleflamme2_sprite_03.png`
