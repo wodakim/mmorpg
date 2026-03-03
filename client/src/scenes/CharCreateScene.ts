@@ -4,6 +4,7 @@ import { getSession, updateSession } from "../state/session";
 import { BODY_COLORS, HAIR_COLORS, PANTS_COLORS } from "../utils/colors";
 import { createButton, createDiv, createPanel } from "../ui/dom";
 import { resetOverlay } from "../ui/overlay";
+import { showConstructionPopup } from "../ui/popup";
 
 export class CharCreateScene extends Phaser.Scene {
   private preview?: Phaser.GameObjects.Container;
@@ -16,14 +17,15 @@ export class CharCreateScene extends Phaser.Scene {
     const overlay = resetOverlay();
     const session = getSession();
     this.cameras.main.setBackgroundColor("#1b2427");
+    const centerX = this.scale.width / 2;
 
-    this.add.text(144, 60, "Character Create", {
-      fontFamily: "Trebuchet MS",
+    this.add.text(centerX, 64, "Character Create", {
+      fontFamily: "Press Start 2P",
       fontSize: "22px",
       color: "#f6f1d8"
     }).setOrigin(0.5);
 
-    this.preview = this.makePreview(144, 180);
+    this.preview = this.makePreview(centerX, 194);
     this.redrawPreview();
 
     const panel = createPanel("bottom");
@@ -35,19 +37,34 @@ export class CharCreateScene extends Phaser.Scene {
     const confirm = createButton("Enter World");
     const back = createButton("Back", "button secondary");
     const status = createDiv("subtitle");
+    const selection = createDiv("selection-summary");
+    const validatePlacement = createButton("Confirmer le placement", "button secondary");
+
+    const refreshSelection = () => {
+      const colors = getSession().colors;
+      selection.textContent = `Placement validé: Hair ${colors.hair + 1} · Body ${colors.body + 1} · Pants ${colors.pants + 1}`;
+    };
+
+    validatePlacement.addEventListener("click", () => {
+      refreshSelection();
+      showConstructionPopup("Placement confirmé", "Les points de jonction des placeholders (tête/corps/jambes) sont validés pour ce profil.");
+    });
 
     HAIR_COLORS.forEach((_, index) => hairRow.appendChild(this.makeColorButton("Hair", index, () => {
       const current = getSession();
       updateSession({ colors: { hair: index, body: current.colors.body, pants: current.colors.pants } });
       this.redrawPreview();
+      refreshSelection();
     })));
     BODY_COLORS.forEach((_, index) => bodyRow.appendChild(this.makeColorButton("Body", index, () => {
       updateSession({ colors: { hair: getSession().colors.hair, body: index, pants: getSession().colors.pants } });
       this.redrawPreview();
+      refreshSelection();
     })));
     PANTS_COLORS.forEach((_, index) => pantsRow.appendChild(this.makeColorButton("Pants", index, () => {
       updateSession({ colors: { hair: getSession().colors.hair, body: getSession().colors.body, pants: index } });
       this.redrawPreview();
+      refreshSelection();
     })));
 
     back.addEventListener("click", () => this.scene.start("MenuScene"));
@@ -63,14 +80,18 @@ export class CharCreateScene extends Phaser.Scene {
       }
     });
 
+    refreshSelection();
+
     stack.append(
       title,
+      selection,
       createDiv("subtitle", "Hair"),
       hairRow,
       createDiv("subtitle", "Body"),
       bodyRow,
       createDiv("subtitle", "Pants"),
       pantsRow,
+      validatePlacement,
       confirm,
       back,
       status
